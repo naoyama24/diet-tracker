@@ -1,0 +1,3099 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>減量管理ダッシュボード</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@500;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --bg-card: #fbfaf6;
+    --ink: #1c1c1c;
+    --ink-2: #555248;
+    --ink-3: #8a8678;
+    --line: #d8d3c5;
+    --accent: #2c4a3e;
+    --accent-2: #6b3a2a;
+    --warm: #f8f4ea;
+    --highlight: #e8e1cd;
+    --rest: #8a8678;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 400;
+    padding-bottom: 60px;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(44, 74, 62, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(107, 58, 42, 0.04) 0%, transparent 40%);
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px 18px 40px;
+  }
+
+  .header {
+    text-align: center;
+    padding: 16px 0 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+
+  .header .eyebrow {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-3);
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .header h1 {
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .header .meta {
+    font-size: 12px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+  }
+
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 20px;
+    position: sticky;
+    top: 8px;
+    z-index: 10;
+    background: var(--bg);
+    padding: 8px 0;
+    border-radius: 10px;
+  }
+
+  .tab {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    padding: 10px 2px;
+    border-radius: 7px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .tab .day-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 9px;
+    font-style: italic;
+    color: var(--ink-3);
+    display: block;
+    margin-bottom: 2px;
+    letter-spacing: 0.03em;
+  }
+
+  .tab.active {
+    background: var(--accent);
+    color: var(--warm);
+    border-color: var(--accent);
+  }
+
+  .tab.active .day-label {
+    color: rgba(248, 244, 234, 0.7);
+  }
+
+  .tab.rest {
+    border-style: dashed;
+    color: var(--ink-3);
+  }
+
+  .tab.rest.active {
+    background: var(--rest);
+    border-color: var(--rest);
+    border-style: solid;
+    color: var(--warm);
+  }
+
+  .tab.rest.active .day-label {
+    color: rgba(248, 244, 234, 0.7);
+  }
+
+  .day {
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .day.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .day-header {
+    margin-bottom: 20px;
+    padding: 16px 0 14px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .day-header.rest-header {
+    border-bottom-color: var(--rest);
+  }
+
+  .day-header .day-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-3);
+    letter-spacing: 0.08em;
+    margin-bottom: 2px;
+  }
+
+  .day-header .day-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .day-header .day-duration {
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+
+  .phase {
+    margin-bottom: 28px;
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .phase-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .phase-info {
+    flex: 1;
+  }
+
+  .phase-name {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  .phase-time {
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+
+  .exercise {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 14px 12px;
+    margin-bottom: 8px;
+  }
+
+  .exercise.highlight {
+    border-color: var(--accent);
+    background: var(--warm);
+    border-left: 3px solid var(--accent);
+  }
+
+  .exercise-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .exercise-name {
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--ink);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .exercise-name .badge {
+    display: inline-block;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 10px;
+    font-weight: 500;
+    font-style: italic;
+    color: var(--accent-2);
+    background: rgba(107, 58, 42, 0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 4px;
+    vertical-align: 2px;
+    letter-spacing: 0.03em;
+  }
+
+  .exercise-reps {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  .exercise-method {
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .exercise-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--ink-3);
+    padding-bottom: 1px;
+    transition: color 0.2s;
+  }
+
+  .exercise-link:hover, .exercise-link:active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .exercise-link::before {
+    content: "▶";
+    font-size: 9px;
+  }
+
+  .callout {
+    background: var(--highlight);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin: 12px 0;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+
+  .callout strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .callout-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .footer-notes {
+    margin-top: 32px;
+    padding: 18px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .footer-notes h3 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--ink);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .footer-notes ul {
+    list-style: none;
+  }
+
+  .footer-notes li {
+    font-size: 12.5px;
+    color: var(--ink-2);
+    padding: 5px 0 5px 16px;
+    position: relative;
+    line-height: 1.6;
+  }
+
+  .footer-notes li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--ink-3);
+  }
+
+  .daily-block {
+    margin-top: 24px;
+    padding: 18px 16px;
+    background: var(--warm);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .daily-block .badge-tag {
+    display: inline-block;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .daily-block h3 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+
+  .checklist {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 14px 6px;
+    margin-bottom: 16px;
+  }
+
+  .checklist-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.5;
+  }
+
+  .checklist-item:last-child {
+    border-bottom: none;
+  }
+
+  .checklist-item .check {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--rest);
+    border-radius: 3px;
+    margin-top: 4px;
+  }
+
+  .checklist-item .item-label {
+    flex: 1;
+  }
+
+  .checklist-item .item-label strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  @media (max-width: 360px) {
+    .container { padding: 18px 14px 32px; }
+    .tab { font-size: 12px; padding: 8px 1px; }
+    .tab .day-label { font-size: 8px; }
+    .exercise-name { font-size: 14px; }
+    .exercise-method { font-size: 12.5px; }
+  }
+
+  /* ========== 画面切り替え ========== */
+  .view {
+    display: none;
+  }
+  .view.active {
+    display: block;
+  }
+
+  /* ========== 下部ナビゲーション ========== */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 6px 0 8px;
+    z-index: 100;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.04);
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 4px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--ink-3);
+    font-size: 10px;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .nav-item.active {
+    color: var(--accent);
+  }
+
+  .nav-item .nav-icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .nav-item .nav-label {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  body {
+    padding-bottom: 90px !important;
+  }
+
+  /* ========== 食事メニュー ========== */
+  .meal-section {
+    margin-bottom: 24px;
+  }
+
+  .meal-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 14px 0 10px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 12px;
+  }
+
+  .meal-title-block {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .meal-time {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+
+  .meal-name {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .meal-cal {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .food-item {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .food-name {
+    font-size: 13.5px;
+    font-weight: 500;
+    flex: 1;
+  }
+
+  .food-pfc {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+
+  .meal-summary {
+    background: var(--warm);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px;
+    margin: 18px 0;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .summary-cell {
+    text-align: center;
+  }
+
+  .summary-cell .label {
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+  }
+
+  .summary-cell .value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .summary-cell .unit {
+    font-size: 10px;
+    color: var(--ink-3);
+    margin-left: 1px;
+  }
+
+  /* ========== 入力フォーム ========== */
+  .form-section {
+    margin-bottom: 22px;
+  }
+
+  .form-section-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+    text-transform: uppercase;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .form-row.single {
+    grid-template-columns: 1fr;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .form-field label {
+    font-size: 11px;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  .form-field input[type="number"],
+  .form-field input[type="date"],
+  .form-field input[type="text"],
+  .form-field textarea {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .form-field input:focus,
+  .form-field textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .form-field textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+
+  .form-field-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 12px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .form-field-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+  }
+
+  .form-field-checkbox label {
+    font-size: 14px;
+    color: var(--ink);
+    cursor: pointer;
+    flex: 1;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--warm);
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    width: 100%;
+    cursor: pointer;
+    margin-top: 16px;
+    font-family: inherit;
+  }
+
+  .btn-primary:active {
+    opacity: 0.8;
+  }
+
+  .btn-secondary {
+    background: var(--bg-card);
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    width: 100%;
+    cursor: pointer;
+    margin-top: 8px;
+    font-family: inherit;
+  }
+
+  .btn-secondary:active {
+    background: var(--highlight);
+  }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--accent-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 12px;
+    width: 100%;
+    cursor: pointer;
+    margin-top: 6px;
+    font-family: inherit;
+  }
+
+  /* ========== 推移グラフ ========== */
+  .chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+
+  .chart-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .chart-subtitle {
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-bottom: 10px;
+  }
+
+  .chart-canvas-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  canvas {
+    display: block;
+    width: 100% !important;
+    height: auto;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ink-3);
+    font-size: 13px;
+  }
+
+  .empty-state .empty-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 15px;
+    color: var(--ink-2);
+    margin-bottom: 8px;
+  }
+
+  /* ========== 統計サマリー ========== */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    background: var(--warm);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .stat-card .stat-label {
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .stat-card .stat-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .stat-card .stat-unit {
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-left: 2px;
+  }
+
+  .stat-card .stat-detail {
+    font-size: 10.5px;
+    color: var(--ink-2);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* ========== 分析画面 ========== */
+  .correlation-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+
+  .correlation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+
+  .correlation-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    flex: 1;
+  }
+
+  .correlation-coef {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .correlation-coef.strong-positive { color: #2c4a3e; }
+  .correlation-coef.weak-positive { color: #5e7a6e; }
+  .correlation-coef.weak { color: #8a8678; }
+  .correlation-coef.weak-negative { color: #a07060; }
+  .correlation-coef.strong-negative { color: #6b3a2a; }
+
+  .correlation-interpretation {
+    font-size: 11px;
+    color: var(--ink-2);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    line-height: 1.6;
+  }
+
+  /* ========== 履歴一覧 ========== */
+  .history-row {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+
+  .history-date {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .history-data {
+    font-size: 11px;
+    color: var(--ink-2);
+    line-height: 1.4;
+  }
+
+  .history-actions button {
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 10px;
+    color: var(--ink-3);
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  /* ========== トースト ========== */
+  .toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--warm);
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+  }
+
+  /* ========== 補足 ========== */
+  .hint {
+    font-size: 11px;
+    color: var(--ink-3);
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- TRAINING VIEW -->
+  <div class="view active" id="view-training">
+
+  <div class="header">
+    <div class="eyebrow">Weekly Training Plan</div>
+    <h1>週間ジムメニュー</h1>
+    <div class="meta">7週間 / 結婚式まで · ジム週4回 · 休養日3回</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-day="mon"><span class="day-label">Mon</span>月</button>
+    <button class="tab rest" data-day="tue"><span class="day-label">Tue</span>火</button>
+    <button class="tab" data-day="wed"><span class="day-label">Wed</span>水</button>
+    <button class="tab" data-day="thu"><span class="day-label">Thu</span>木</button>
+    <button class="tab rest" data-day="fri"><span class="day-label">Fri</span>金</button>
+    <button class="tab" data-day="sat"><span class="day-label">Sat</span>土</button>
+    <button class="tab rest" data-day="sun"><span class="day-label">Sun</span>日</button>
+  </div>
+
+  <!-- ============== MONDAY ============== -->
+  <div class="day active" id="mon">
+    <div class="day-header">
+      <div class="day-name">DAY 01 — Monday</div>
+      <div class="day-title">下半身 ＋ 股関節モビリティ</div>
+      <div class="day-duration">ジム · 所要時間：50分</div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">I</div>
+        <div class="phase-info">
+          <div class="phase-name">ウォームアップ＋動的モビリティ</div>
+          <div class="phase-time">10分</div>
+        </div>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">バイク</div>
+          <div class="exercise-reps">5分</div>
+        </div>
+        <div class="exercise-method">軽負荷で心拍を上げて筋温を上げる</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=エアロバイク+ウォームアップ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ワールドグレイテストストレッチ</div>
+          <div class="exercise-reps">左右 ×5</div>
+        </div>
+        <div class="exercise-method">ランジ姿勢から前足の内側に同側の手をつき、反対の手を天井へ捻り上げる</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ワールドグレイテストストレッチ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ヒップサークル</div>
+          <div class="exercise-reps">左右 ×10</div>
+        </div>
+        <div class="exercise-method">四つん這いで片膝を持ち上げ、股関節で円を描く</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ヒップサークル+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">レッグスイング（前後 / 左右）</div>
+          <div class="exercise-reps">各15回</div>
+        </div>
+        <div class="exercise-method">壁に手をつき、片脚を前後・左右に振る</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=レッグスイング+ウォームアップ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ボディウェイトスクワット</div>
+          <div class="exercise-reps">10回</div>
+        </div>
+        <div class="exercise-method">本番動作の予行。深さとフォームを意識</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=自重スクワット+正しいフォーム" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">II</div>
+        <div class="phase-info">
+          <div class="phase-name">メインメニュー</div>
+          <div class="phase-time">30分 · 重量は10〜12回が限界の負荷</div>
+        </div>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">レッグプレス</div>
+          <div class="exercise-reps">3 × 12</div>
+        </div>
+        <div class="exercise-method">膝が内側に入らないよう注意。可動域を大きく</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=レッグプレス+やり方+フォーム" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ゴブレットスクワット</div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+        <div class="exercise-method">ダンベルを胸の前で保持。背中を丸めずしゃがむ</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ゴブレットスクワット+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">レッグカール（マシン）</div>
+          <div class="exercise-reps">3 × 12</div>
+        </div>
+        <div class="exercise-method">ハムストリング狙い。下ろす動作もゆっくり</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=レッグカール+マシン+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">カーフレイズ</div>
+          <div class="exercise-reps">2 × 15</div>
+        </div>
+        <div class="exercise-method">最大伸展まで踵を下ろし、最大収縮まで上げる</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=カーフレイズ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">III</div>
+        <div class="phase-info">
+          <div class="phase-name">クールダウン（静的ストレッチ）</div>
+          <div class="phase-time">10分</div>
+        </div>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ピジョンポーズ</div>
+          <div class="exercise-reps">左右 30秒×2</div>
+        </div>
+        <div class="exercise-method">片脚を前に折り、もう片脚を後ろへ。お尻と股関節外側を伸ばす</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ピジョンポーズ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">仰向けハムストリングストレッチ</div>
+          <div class="exercise-reps">左右 30秒×2</div>
+        </div>
+        <div class="exercise-method">仰向けで片脚を上げ、タオルや手で引き寄せる</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=仰向け+ハムストリングストレッチ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">カーフストレッチ</div>
+          <div class="exercise-reps">左右 30秒</div>
+        </div>
+        <div class="exercise-method">壁に手をつき片脚を後ろに伸ばす</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ふくらはぎ+ストレッチ+壁" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">90/90ストレッチ</div>
+          <div class="exercise-reps">左右 30秒</div>
+        </div>
+        <div class="exercise-method">床に座り両膝を90度に曲げ、前脚側にゆっくり倒れる</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=90+90+ストレッチ+股関節" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== TUESDAY (REST) ============== -->
+  <div class="day" id="tue">
+    <div class="day-header rest-header">
+      <div class="day-name">DAY 02 — Tuesday</div>
+      <div class="day-title">休養日 / アクティブレスト</div>
+      <div class="day-duration">ジムなし · 自宅・通勤で完結</div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">休養日の目的</div>
+      月曜の<strong>下半身トレーニングからの回復</strong>を最優先にしつつ、軽い活動で代謝は維持。完全に動かない日にしない
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">I</div>
+        <div class="phase-info">
+          <div class="phase-name">日常活動でのエネルギー消費</div>
+          <div class="phase-time">通勤・移動の中で完結</div>
+        </div>
+      </div>
+
+      <div class="checklist">
+        <div class="checklist-item">
+          <div class="check"></div>
+          <div class="item-label"><strong>階段の利用</strong>：6階の自宅は登りのみ階段。下りは膝負担が大きいためエレベーター可</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check"></div>
+          <div class="item-label"><strong>一駅手前で下車</strong>：オフィス出社時、約1.5km・20分のウォーキング</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check"></div>
+          <div class="item-label"><strong>歩数 8,000〜10,000歩</strong>を目標。スマホで確認</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">II</div>
+        <div class="phase-info">
+          <div class="phase-name">自宅メニュー（5〜10分）</div>
+          <div class="phase-time">就寝前または朝</div>
+        </div>
+      </div>
+
+      <div class="exercise highlight">
+        <div class="exercise-head">
+          <div class="exercise-name">カウチストレッチ<span class="badge">最重要</span></div>
+          <div class="exercise-reps">左右 45秒</div>
+        </div>
+        <div class="exercise-method">片膝を床、足を後ろの台や壁に当てる→上体を起こす。デスクワークで硬くなる股関節屈筋に直接効く</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=カウチストレッチ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">胸椎モビリティ</div>
+          <div class="exercise-reps">2分</div>
+        </div>
+        <div class="exercise-method">フォームローラー（あれば）または四つん這いキャット&カウ。既知の課題への対応</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=胸椎モビリティ+ストレッチ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">仰向けハムストリングストレッチ</div>
+          <div class="exercise-reps">左右 45秒</div>
+        </div>
+        <div class="exercise-method">月曜の下半身トレ後ケア。タオルで補助して伸ばす</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=仰向け+ハムストリングストレッチ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">チャイルドポーズ</div>
+          <div class="exercise-reps">60秒</div>
+        </div>
+        <div class="exercise-method">正座から両手を前に伸ばし、額を床に。全身リセット</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=チャイルドポーズ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">回復のための行動</div>
+      <strong>水を意識的に多く飲む</strong>（1.5〜2L目安）。<strong>就寝時間を早める</strong>（平日6時間以上の確保が減量効率に直結）。<strong>飲酒は避ける</strong>
+    </div>
+  </div>
+
+  <!-- ============== WEDNESDAY ============== -->
+  <div class="day" id="wed">
+    <div class="day-header">
+      <div class="day-name">DAY 03 — Wednesday</div>
+      <div class="day-title">胸 ・ 肩 ・ 三頭 ＋ 胸椎モビリティ</div>
+      <div class="day-duration">ジム · 所要時間：50分</div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">本日の重点</div>
+      <strong>胸椎モビリティ</strong>を冒頭に配置。胸椎の硬さを残したままショルダープレスを行うと肩を痛めやすいため、必ず実施
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">I</div>
+        <div class="phase-info">
+          <div class="phase-name">ウォームアップ＋胸椎モビリティ</div>
+          <div class="phase-time">10分</div>
+        </div>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">バイク</div>
+          <div class="exercise-reps">5分</div>
+        </div>
+        <div class="exercise-method">軽負荷で筋温を上げる</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=エアロバイク+ウォームアップ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">キャット&カウ</div>
+          <div class="exercise-reps">10回</div>
+        </div>
+        <div class="exercise-method">四つん這いで背中を丸める→反らす</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=キャットアンドカウ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">スレッドザニードル</div>
+          <div class="exercise-reps">左右 ×8</div>
+        </div>
+        <div class="exercise-method">四つん這いから片手を反対の脇下に通す→天井に向けて開く</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=スレッドザニードル+ストレッチ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise highlight">
+        <div class="exercise-head">
+          <div class="exercise-name">フォームローラー胸椎エクステンション<span class="badge">最重要</span></div>
+          <div class="exercise-reps">3箇所×5回</div>
+        </div>
+        <div class="exercise-method">仰向けでローラーを肩甲骨下に当て、頭を後ろに倒す。位置を変えて3箇所</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=フォームローラー+胸椎エクステンション" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ウォールエンジェル</div>
+          <div class="exercise-reps">10回</div>
+        </div>
+        <div class="exercise-method">壁に背中をつけ、腕をW字→Y字に動かす</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ウォールエンジェル+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ショルダーディスロケーション</div>
+          <div class="exercise-reps">10回</div>
+        </div>
+        <div class="exercise-method">バンドかタオルを両手で持ち、頭の上を通して背中側に回す</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ショルダーディスロケーション+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">II</div>
+        <div class="phase-info">
+          <div class="phase-name">メインメニュー</div>
+          <div class="phase-time">30分</div>
+        </div>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">チェストプレスマシン</div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+        <div class="exercise-method">肩甲骨を寄せて固定。胸を張ったまま押す</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=チェストプレスマシン+やり方+フォーム" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ショルダープレスマシン</div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+        <div class="exercise-method">反動を使わず、肩の真上に押し上げる</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ショルダープレスマシン+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ケーブルサイドレイズ</div>
+          <div class="exercise-reps">3 × 12</div>
+        </div>
+        <div class="exercise-method">肘を軽く曲げ、肩の高さまで横に上げる</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ケーブルサイドレイズ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">トライセプスプッシュダウン</div>
+          <div class="exercise-reps">3 × 12</div>
+        </div>
+        <div class="exercise-method">肘を体側に固定し、前腕だけで押し下げる</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=トライセプスプッシュダウン+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">III</div>
+        <div class="phase-info">
+          <div class="phase-name">クールダウン</div>
+          <div class="phase-time">10分</div>
+        </div>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ドアフレーム胸ストレッチ</div>
+          <div class="exercise-reps">左右 30秒×2</div>
+        </div>
+        <div class="exercise-method">ドア枠に肘90度で手をつき、体を前に出す</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ドアフレーム+胸ストレッチ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">クロスボディ肩ストレッチ</div>
+          <div class="exercise-reps">左右 30秒</div>
+        </div>
+        <div class="exercise-method">片腕を反対側に伸ばし、もう片手で押さえる</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=クロスボディ+肩ストレッチ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">三頭筋ストレッチ</div>
+          <div class="exercise-reps">左右 30秒</div>
+        </div>
+        <div class="exercise-method">片腕を頭の後ろに曲げ、肘を反対の手で押す</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=三頭筋+ストレッチ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== THURSDAY ============== -->
+  <div class="day" id="thu">
+    <div class="day-header">
+      <div class="day-name">DAY 04 — Thursday</div>
+      <div class="day-title">有酸素 ＋ 体幹 ＋ 全身ストレッチ</div>
+      <div class="day-duration">ジム · 所要時間：50分</div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">設計意図</div>
+      水曜の翌日のため強度を落とし、<strong>傾斜歩行＋体幹＋ストレッチ</strong>で構成。ランニングではなく傾斜歩行を採用するのは、現体重で走行すると膝への負担が大きいため
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">I</div>
+        <div class="phase-info">
+          <div class="phase-name">ウォームアップ</div>
+          <div class="phase-time">5分</div>
+        </div>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">トレッドミル早歩き</div>
+          <div class="exercise-reps">5分</div>
+        </div>
+        <div class="exercise-method">傾斜なし、4〜5km/hで体を温める</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=トレッドミル+ウォーキング+ウォームアップ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">II</div>
+        <div class="phase-info">
+          <div class="phase-name">傾斜歩行（ゾーン2有酸素）</div>
+          <div class="phase-time">25分</div>
+        </div>
+      </div>
+
+      <div class="exercise highlight">
+        <div class="exercise-head">
+          <div class="exercise-name">トレッドミル傾斜歩行</div>
+          <div class="exercise-reps">25分</div>
+        </div>
+        <div class="exercise-method">傾斜10〜12%、速度5〜6km/h。心拍数120〜140を目標。会話できる強度（ゾーン2）</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=トレッドミル+傾斜歩行+脂肪燃焼" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">III</div>
+        <div class="phase-info">
+          <div class="phase-name">体幹サーキット</div>
+          <div class="phase-time">10分 · 2周</div>
+        </div>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">プランク</div>
+          <div class="exercise-reps">30秒</div>
+        </div>
+        <div class="exercise-method">肘とつま先で支え、体を一直線に</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=プランク+正しいフォーム" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">バードドッグ</div>
+          <div class="exercise-reps">左右 ×10</div>
+        </div>
+        <div class="exercise-method">四つん這いから対角の手足を伸ばす</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=バードドッグ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">デッドバグ</div>
+          <div class="exercise-reps">10回</div>
+        </div>
+        <div class="exercise-method">仰向けで対角の手足をゆっくり伸ばす。腰を床に押し付ける</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=デッドバグ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">IV</div>
+        <div class="phase-info">
+          <div class="phase-name">全身ストレッチ（重点日）</div>
+          <div class="phase-time">10分 · デスクワーク由来の硬さ対策</div>
+        </div>
+      </div>
+
+      <div class="exercise highlight">
+        <div class="exercise-head">
+          <div class="exercise-name">カウチストレッチ<span class="badge">最重要</span></div>
+          <div class="exercise-reps">左右 45秒</div>
+        </div>
+        <div class="exercise-method">片膝を床、足を後ろの台や壁に当てる→上体を起こす。座り過ぎで硬くなる股関節屈筋に直接効く</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=カウチストレッチ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ハーフニーリング股関節屈筋ストレッチ</div>
+          <div class="exercise-reps">左右 30秒</div>
+        </div>
+        <div class="exercise-method">片膝立ちで前脚に体重を乗せ、後脚側のお尻を締める</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ハーフニーリング+股関節+ストレッチ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">チャイルドポーズ</div>
+          <div class="exercise-reps">60秒</div>
+        </div>
+        <div class="exercise-method">正座から両手を前に伸ばし、額を床に</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=チャイルドポーズ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">仰向けスパイナルツイスト</div>
+          <div class="exercise-reps">左右 30秒</div>
+        </div>
+        <div class="exercise-method">仰向けで片膝を反対側に倒す。肩は床から離さない</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=仰向け+スパイナルツイスト" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">シーテッドフォワードベンド</div>
+          <div class="exercise-reps">60秒</div>
+        </div>
+        <div class="exercise-method">床に座り両脚を前に伸ばし上体を倒す</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=シーテッドフォワードベンド+ヨガ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== FRIDAY (REST) ============== -->
+  <div class="day" id="fri">
+    <div class="day-header rest-header">
+      <div class="day-name">DAY 05 — Friday</div>
+      <div class="day-title">休養日 / アクティブレスト</div>
+      <div class="day-duration">ジムなし · 翌日のジムに備える</div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">休養日の目的</div>
+      水・木の連続トレーニングからの<strong>完全な回復</strong>。土曜の背中・二頭トレーニングに備える。週末ジムに行く方を選ぶ準備日
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">I</div>
+        <div class="phase-info">
+          <div class="phase-name">日常活動でのエネルギー消費</div>
+          <div class="phase-time">通勤・移動の中で完結</div>
+        </div>
+      </div>
+
+      <div class="checklist">
+        <div class="checklist-item">
+          <div class="check"></div>
+          <div class="item-label"><strong>階段の利用</strong>：6階の自宅、登りは階段</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check"></div>
+          <div class="item-label"><strong>一駅手前で下車</strong>：オフィス出社時、約1.5km・20分のウォーキング</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check"></div>
+          <div class="item-label"><strong>歩数 8,000〜10,000歩</strong>を目標</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">II</div>
+        <div class="phase-info">
+          <div class="phase-name">自宅メニュー（5〜10分）</div>
+          <div class="phase-time">就寝前または朝</div>
+        </div>
+      </div>
+
+      <div class="exercise highlight">
+        <div class="exercise-head">
+          <div class="exercise-name">カウチストレッチ<span class="badge">最重要</span></div>
+          <div class="exercise-reps">左右 45秒</div>
+        </div>
+        <div class="exercise-method">デスクワーク最大の弱点・股関節屈筋ケア</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=カウチストレッチ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">胸椎モビリティ</div>
+          <div class="exercise-reps">2分</div>
+        </div>
+        <div class="exercise-method">フォームローラーまたはキャット&カウ。既知の課題への対応</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=胸椎モビリティ+ストレッチ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ドアフレーム胸ストレッチ</div>
+          <div class="exercise-reps">左右 30秒</div>
+        </div>
+        <div class="exercise-method">水曜の胸トレ後ケア。ドア枠を使って胸を開く</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ドアフレーム+胸ストレッチ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">チャイルドポーズ</div>
+          <div class="exercise-reps">60秒</div>
+        </div>
+        <div class="exercise-method">全身リセット。就寝前にも有効</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=チャイルドポーズ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">飲酒について</div>
+      金曜は飲酒の機会が多い曜日。<strong>減量期の7週間は禁酒、または週1杯までに制限</strong>することを推奨。1回の飲み会で1,000kcal超の摂取になり、減量赤字を1〜2日分相殺
+    </div>
+  </div>
+
+  <!-- ============== SATURDAY ============== -->
+  <div class="day" id="sat">
+    <div class="day-header">
+      <div class="day-name">DAY 06 — Saturday</div>
+      <div class="day-title">背中 ・ 二頭 ＋ 肩甲帯モビリティ</div>
+      <div class="day-duration">ジム · 所要時間：50分</div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">I</div>
+        <div class="phase-info">
+          <div class="phase-name">ウォームアップ＋肩甲帯モビリティ</div>
+          <div class="phase-time">10分</div>
+        </div>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">バイク</div>
+          <div class="exercise-reps">5分</div>
+        </div>
+        <div class="exercise-method">軽負荷で筋温を上げる</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=エアロバイク+ウォームアップ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">バンドプルアパート</div>
+          <div class="exercise-reps">15回×2</div>
+        </div>
+        <div class="exercise-method">チューブを胸の前で持ち、左右に開く</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=バンドプルアパート+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ウォールスライド</div>
+          <div class="exercise-reps">10回</div>
+        </div>
+        <div class="exercise-method">壁に背中をつけ、腕をW→Y字に滑らせる</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ウォールスライド+やり方+肩甲骨" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">スキャプラプッシュアップ</div>
+          <div class="exercise-reps">10回</div>
+        </div>
+        <div class="exercise-method">プランク姿勢で肩甲骨だけを寄せる・離す</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=スキャプラプッシュアップ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">デッドバグ</div>
+          <div class="exercise-reps">左右 ×8</div>
+        </div>
+        <div class="exercise-method">仰向けで対角の手足をゆっくり伸ばす</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=デッドバグ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">II</div>
+        <div class="phase-info">
+          <div class="phase-name">メインメニュー</div>
+          <div class="phase-time">30分</div>
+        </div>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ラットプルダウン</div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+        <div class="exercise-method">肩甲骨を下げてから引く。胸に向けて引き下ろす</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ラットプルダウン+やり方+フォーム" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">シーテッドロー</div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+        <div class="exercise-method">背中を反らさず、肘を後ろに引く意識</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=シーテッドロー+やり方+フォーム" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">フェイスプル<span class="badge">猫背改善</span></div>
+          <div class="exercise-reps">3 × 15</div>
+        </div>
+        <div class="exercise-method">顔の高さでケーブルを引き、肩甲骨を寄せる。デスクワーカーに有効</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=フェイスプル+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">バックエクステンション</div>
+          <div class="exercise-reps">2 × 12</div>
+        </div>
+        <div class="exercise-method">専用ベンチで上体を起こす。反り過ぎ注意</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=バックエクステンション+ベンチ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ダンベルカール</div>
+          <div class="exercise-reps">2 × 12</div>
+        </div>
+        <div class="exercise-method">肘を体側に固定。反動を使わない</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=ダンベルカール+やり方+フォーム" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">III</div>
+        <div class="phase-info">
+          <div class="phase-name">クールダウン</div>
+          <div class="phase-time">10分</div>
+        </div>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">チャイルドポーズ（手を左右に振る）</div>
+          <div class="exercise-reps">左右 30秒</div>
+        </div>
+        <div class="exercise-method">通常のチャイルドポーズから手を左右にずらして広背筋を伸ばす</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=チャイルドポーズ+広背筋+ストレッチ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">ラットストレッチ</div>
+          <div class="exercise-reps">30秒×2</div>
+        </div>
+        <div class="exercise-method">立位でバーを掴み、お尻を後ろに引く</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=広背筋+ストレッチ+バー" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">胸開きストレッチ</div>
+          <div class="exercise-reps">30秒</div>
+        </div>
+        <div class="exercise-method">両手を背中側で組み、胸を張る</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=胸開き+ストレッチ+背中で組む" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">二頭筋ストレッチ</div>
+          <div class="exercise-reps">左右 30秒</div>
+        </div>
+        <div class="exercise-method">壁に手のひらをつけ、体を反対側に向ける</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=二頭筋+ストレッチ+壁" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== SUNDAY (REST) ============== -->
+  <div class="day" id="sun">
+    <div class="day-header rest-header">
+      <div class="day-name">DAY 07 — Sunday</div>
+      <div class="day-title">休養日 / アクティブレスト</div>
+      <div class="day-duration">ジムなし · 1週間のリセット</div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">休養日の目的</div>
+      土曜の<strong>背中・二頭トレーニングからの回復</strong>と、<strong>翌週の月曜（下半身）に備える準備</strong>。1週間の振り返りと体重チェックを行う日
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">I</div>
+        <div class="phase-info">
+          <div class="phase-name">週次セルフチェック</div>
+          <div class="phase-time">朝のうちに実施</div>
+        </div>
+      </div>
+
+      <div class="checklist">
+        <div class="checklist-item">
+          <div class="check"></div>
+          <div class="item-label"><strong>体重計測</strong>：起床直後・トイレ後・同じ服装で。週平均で判断する</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check"></div>
+          <div class="item-label"><strong>1週間の振り返り</strong>：ジム4回・食事・睡眠の達成度を確認</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check"></div>
+          <div class="item-label"><strong>翌週の食材買い出し</strong>：卵2パック・豆腐7パック・納豆・ツナ缶7個・サラダチキン7個など</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check"></div>
+          <div class="item-label"><strong>ゆで卵作り置き</strong>：日曜のうちに7個まとめて茹でる</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">II</div>
+        <div class="phase-info">
+          <div class="phase-name">日常活動でのエネルギー消費</div>
+          <div class="phase-time">休日の過ごし方の中で</div>
+        </div>
+      </div>
+
+      <div class="checklist">
+        <div class="checklist-item">
+          <div class="check"></div>
+          <div class="item-label"><strong>歩数 8,000〜10,000歩</strong>：休日でもキープ。買い物・散歩で確保</div>
+        </div>
+        <div class="checklist-item">
+          <div class="check"></div>
+          <div class="item-label"><strong>階段の利用</strong>：6階の自宅、登りは階段を継続</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header">
+        <div class="phase-num">III</div>
+        <div class="phase-info">
+          <div class="phase-name">自宅メニュー(10分)</div>
+          <div class="phase-time">時間に余裕がある日曜は長めに</div>
+        </div>
+      </div>
+
+      <div class="exercise highlight">
+        <div class="exercise-head">
+          <div class="exercise-name">カウチストレッチ<span class="badge">最重要</span></div>
+          <div class="exercise-reps">左右 60秒</div>
+        </div>
+        <div class="exercise-method">時間に余裕があるので各60秒に延長。デスクワークで硬くなる股関節屈筋に直接効く</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=カウチストレッチ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">胸椎モビリティ</div>
+          <div class="exercise-reps">3分</div>
+        </div>
+        <div class="exercise-method">フォームローラーまたはキャット&カウ。週1の集中ケア時間として活用</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=胸椎モビリティ+ストレッチ" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">広背筋ストレッチ</div>
+          <div class="exercise-reps">左右 30秒×2</div>
+        </div>
+        <div class="exercise-method">土曜の背中トレ後ケア。立位で頭上に手を伸ばし、反対側に倒す</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=広背筋+ストレッチ+立位" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">90/90ストレッチ</div>
+          <div class="exercise-reps">左右 45秒</div>
+        </div>
+        <div class="exercise-method">月曜の下半身トレに備えて股関節の準備</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=90+90+ストレッチ+股関節" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+
+      <div class="exercise">
+        <div class="exercise-head">
+          <div class="exercise-name">チャイルドポーズ</div>
+          <div class="exercise-reps">90秒</div>
+        </div>
+        <div class="exercise-method">全身リセット。長めに保持して深呼吸</div>
+        <a class="exercise-link" href="https://www.youtube.com/results?search_query=チャイルドポーズ+やり方" target="_blank" rel="noopener">動画で確認</a>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">睡眠の確保</div>
+      日曜は<strong>翌週に向けて十分な睡眠</strong>を取る最後のチャンス。早めに就寝し、月曜以降の睡眠負債を作らない
+    </div>
+  </div>
+
+  <!-- ============== Footer notes ============== -->
+  <div class="footer-notes">
+    <h3>共通の注意点</h3>
+    <ul>
+      <li>痛みが出る範囲はやらない。ストレッチは「気持ちよく伸びる」感覚が正解</li>
+      <li>呼吸を止めない。鼻から吸って口から吐く</li>
+      <li>反動をつけない。静的ストレッチは静止が原則</li>
+      <li>左右差がある場合、硬い側を長めに実施</li>
+      <li>コレステロール値が高いため、息を止めて挙げる動作は避ける</li>
+      <li>筋肉痛が強い日は休む判断を。減量期は回復力も落ちる</li>
+    </ul>
+  </div>
+
+  <div class="footer-notes">
+    <h3>7週間の進行ペース</h3>
+    <ul>
+      <li>1〜2週目：フォーム習得、軽重量、習慣化</li>
+      <li>3〜4週目：重量を10〜20%増、回数しっかりこなす</li>
+      <li>5〜6週目：セット間休憩を90秒→60秒に短縮</li>
+      <li>7週目：強度を落として疲労抜き</li>
+    </ul>
+  </div>
+
+  </div><!-- /view-training -->
+
+  <!-- ============================================================
+       MEAL VIEW (食事メニュー)
+       ============================================================ -->
+  <div class="view" id="view-meal">
+    <div class="header">
+      <div class="eyebrow">Daily Meal Plan</div>
+      <h1>食事メニュー</h1>
+      <div class="meta">確定版 · 1日 1,470kcal · P130g</div>
+    </div>
+
+    <!-- 1日サマリー -->
+    <div class="meal-summary">
+      <div style="font-family: 'Noto Serif JP', serif; font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 0.05em;">DAILY TOTAL</div>
+      <div class="summary-grid">
+        <div class="summary-cell">
+          <div class="label">CAL</div>
+          <div class="value">1,470<span class="unit">kcal</span></div>
+        </div>
+        <div class="summary-cell">
+          <div class="label">P</div>
+          <div class="value">130<span class="unit">g</span></div>
+        </div>
+        <div class="summary-cell">
+          <div class="label">F</div>
+          <div class="value">38<span class="unit">g</span></div>
+        </div>
+        <div class="summary-cell">
+          <div class="label">C</div>
+          <div class="value">151<span class="unit">g</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 朝食 -->
+    <div class="meal-section">
+      <div class="meal-header">
+        <div class="meal-title-block">
+          <div class="meal-time">8:00</div>
+          <div class="meal-name">朝食</div>
+        </div>
+        <div class="meal-cal">370 kcal</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">バナナ 1本</div>
+        <div class="food-pfc">93 kcal · P1 / F0 / C24</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">豆乳 200ml</div>
+        <div class="food-pfc">90 kcal · P7 / F4 / C6</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">ULTORAホエイプロテイン 1.5杯</div>
+        <div class="food-pfc">180 kcal · P30 / F2 / C5</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">ゆで卵 1個</div>
+        <div class="food-pfc">75 kcal · P6 / F5 / C0</div>
+      </div>
+    </div>
+
+    <!-- 昼食 -->
+    <div class="meal-section">
+      <div class="meal-header">
+        <div class="meal-title-block">
+          <div class="meal-time">12:00</div>
+          <div class="meal-name">昼食</div>
+        </div>
+        <div class="meal-cal">390 kcal</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">サラダチキン 1個</div>
+        <div class="food-pfc">110 kcal · P25 / F2 / C1</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">おにぎり 1個</div>
+        <div class="food-pfc">180 kcal · P4 / F1 / C40</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">ゆで卵 1個</div>
+        <div class="food-pfc">75 kcal · P6 / F5 / C0</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">海藻サラダ</div>
+        <div class="food-pfc">25 kcal · P1 / F2 / C5</div>
+      </div>
+    </div>
+
+    <!-- 夕食 -->
+    <div class="meal-section">
+      <div class="meal-header">
+        <div class="meal-title-block">
+          <div class="meal-time">20:00</div>
+          <div class="meal-name">夕食</div>
+        </div>
+        <div class="meal-cal">650 kcal</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">そば 1人前</div>
+        <div class="food-pfc">270 kcal · P10 / F2 / C52</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">納豆 1パック</div>
+        <div class="food-pfc">95 kcal · P8 / F5 / C6</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">ノンオイルシーチキン 1缶</div>
+        <div class="food-pfc">52 kcal · P12 / F0 / C0</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">生卵 1個</div>
+        <div class="food-pfc">75 kcal · P6 / F5 / C0</div>
+      </div>
+      <div class="food-item">
+        <div class="food-name">冷奴(絹豆腐 150g)</div>
+        <div class="food-pfc">90 kcal · P11 / F5 / C5</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">運用ルール</div>
+      飲酒は上記に<strong>含まれない</strong>。減量期は禁酒推奨。<br>
+      水分は1日1.5〜2L摂取。<br>
+      体調不良時は無理せず、タンパク質源だけは確保
+    </div>
+  </div>
+
+  <!-- ============================================================
+       RECORD VIEW (記録入力)
+       ============================================================ -->
+  <div class="view" id="view-record">
+    <div class="header">
+      <div class="eyebrow">Daily Record</div>
+      <h1>日々の記録</h1>
+      <div class="meta">毎朝の入力で進捗を可視化</div>
+    </div>
+
+    <form id="record-form" onsubmit="return false;">
+      <div class="form-section">
+        <div class="form-section-title">日付</div>
+        <div class="form-row single">
+          <div class="form-field">
+            <input type="date" id="rec-date" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">食事(カロミルから転記)</div>
+        <div class="form-row single">
+          <div class="form-field">
+            <label>総カロリー (kcal)</label>
+            <input type="number" id="rec-cal" inputmode="decimal" step="1" placeholder="例: 1470">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>タンパク質 (g)</label>
+            <input type="number" id="rec-p" inputmode="decimal" step="0.1" placeholder="P">
+          </div>
+          <div class="form-field">
+            <label>脂質 (g)</label>
+            <input type="number" id="rec-f" inputmode="decimal" step="0.1" placeholder="F">
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="form-field">
+            <label>炭水化物 (g)</label>
+            <input type="number" id="rec-c" inputmode="decimal" step="0.1" placeholder="C">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">体組成(Health Planetから転記)</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>体重 (kg)</label>
+            <input type="number" id="rec-weight" inputmode="decimal" step="0.01" placeholder="例: 77.50">
+          </div>
+          <div class="form-field">
+            <label>体脂肪率 (%)</label>
+            <input type="number" id="rec-bf" inputmode="decimal" step="0.1" placeholder="例: 24.5">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">活動 / コンディション</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>歩数</label>
+            <input type="number" id="rec-steps" inputmode="numeric" step="1" placeholder="例: 9000">
+          </div>
+          <div class="form-field">
+            <label>睡眠時間 (h)</label>
+            <input type="number" id="rec-sleep" inputmode="decimal" step="0.5" placeholder="例: 6.5">
+          </div>
+        </div>
+        <div class="form-row" style="margin-top: 8px;">
+          <div class="form-field-checkbox">
+            <input type="checkbox" id="rec-train">
+            <label for="rec-train">トレーニング実施</label>
+          </div>
+          <div class="form-field-checkbox">
+            <input type="checkbox" id="rec-alc">
+            <label for="rec-alc">飲酒あり</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">メモ</div>
+        <div class="form-row single">
+          <div class="form-field">
+            <textarea id="rec-memo" placeholder="体調・イベント・気づき等(任意)"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-save">記録を保存</button>
+    </form>
+
+    <div class="form-section" style="margin-top: 32px;">
+      <div class="form-section-title">これまでの記録</div>
+      <div id="history-list"></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       CHART VIEW (推移グラフ)
+       ============================================================ -->
+  <div class="view" id="view-chart">
+    <div class="header">
+      <div class="eyebrow">Progress</div>
+      <h1>推移グラフ</h1>
+      <div class="meta">7週間の進捗を視覚化</div>
+    </div>
+
+    <div id="stats-summary" class="stat-grid"></div>
+
+    <div class="chart-card">
+      <div class="chart-title">体重・体脂肪率</div>
+      <div class="chart-subtitle">青: 体重(kg) / 茶: 体脂肪(%)</div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart-body"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">摂取カロリー</div>
+      <div class="chart-subtitle">点線: 目標1,470kcal</div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart-cal"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">PFCバランス</div>
+      <div class="chart-subtitle">P=タンパク質 / F=脂質 / C=炭水化物 (g)</div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart-pfc"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">睡眠時間 / 歩数</div>
+      <div class="chart-subtitle">青: 睡眠(h) / 緑: 歩数(千歩)</div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart-activity"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">トレーニング実施日</div>
+      <div class="chart-subtitle">緑: 実施 / グレー: 休養</div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart-train"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ANALYSIS VIEW (相関分析)
+       ============================================================ -->
+  <div class="view" id="view-analysis">
+    <div class="header">
+      <div class="eyebrow">Correlation Analysis</div>
+      <h1>相関分析</h1>
+      <div class="meta">中間・終了時に確認 · 散布図 + 回帰直線</div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">統計的注意</div>
+      標本数が30未満の場合、相関係数は<strong>参考値</strong>として扱う。49日分揃った時点で傾向の判断材料になる
+    </div>
+
+    <div id="analysis-content"></div>
+
+    <button class="btn-secondary" onclick="switchView('data')" style="margin-top: 24px;">データ管理(エクスポート・インポート)</button>
+  </div>
+
+  <!-- ============================================================
+       DATA VIEW (データ管理)
+       ============================================================ -->
+  <div class="view" id="view-data">
+    <div class="header">
+      <div class="eyebrow">Data Management</div>
+      <h1>データ管理</h1>
+      <div class="meta">バックアップ・移行・初期化</div>
+    </div>
+
+    <button class="btn-secondary" onclick="switchView('analysis')" style="margin-bottom: 16px;">← 分析画面に戻る</button>
+
+    <div class="form-section">
+      <div class="form-section-title">エクスポート</div>
+      <div class="hint">記録データをJSONファイルとして保存。バックアップやPC等への移行に使用</div>
+      <button class="btn-secondary" onclick="exportData()">JSONファイルをダウンロード</button>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">インポート</div>
+      <div class="hint">過去にエクスポートしたJSONファイルを読み込んで復元(現在のデータは上書きされる)</div>
+      <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(event)">
+      <button class="btn-secondary" onclick="document.getElementById('import-file').click()">JSONファイルを選択</button>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">CSV出力</div>
+      <div class="hint">表計算ソフト等での分析用。Excel・Numbersで開ける</div>
+      <button class="btn-secondary" onclick="exportCSV()">CSVファイルをダウンロード</button>
+    </div>
+
+    <div class="form-section" style="margin-top: 32px;">
+      <div class="form-section-title">記録の初期化</div>
+      <div class="hint">すべての記録データを削除する。元に戻せない</div>
+      <button class="btn-danger" onclick="resetData()">すべてのデータを削除</button>
+    </div>
+
+    <div class="footer-notes" style="margin-top: 24px;">
+      <h3>仕様</h3>
+      <ul>
+        <li>データはブラウザのlocalStorageに保存</li>
+        <li>キャッシュ削除でデータが消える可能性あり</li>
+        <li>定期的にエクスポートを推奨(週1回程度)</li>
+        <li>記録の編集は記録画面の履歴一覧から実施</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ========== 下部ナビゲーション ========== -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-view="training">
+    <div class="nav-icon">◇</div>
+    <div class="nav-label">トレ</div>
+  </button>
+  <button class="nav-item" data-view="meal">
+    <div class="nav-icon">○</div>
+    <div class="nav-label">食事</div>
+  </button>
+  <button class="nav-item" data-view="record">
+    <div class="nav-icon">+</div>
+    <div class="nav-label">記録</div>
+  </button>
+  <button class="nav-item" data-view="chart">
+    <div class="nav-icon">∿</div>
+    <div class="nav-label">推移</div>
+  </button>
+  <button class="nav-item" data-view="analysis">
+    <div class="nav-icon">⊕</div>
+    <div class="nav-label">分析</div>
+  </button>
+</nav>
+
+<div id="toast" class="toast"></div>
+<script>
+  /* ====== トレーニング画面の曜日タブ ====== */
+  const dayTabs = document.querySelectorAll('.tab');
+  const dayPanels = document.querySelectorAll('.day');
+
+  dayTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.day;
+      dayTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      dayPanels.forEach(d => d.classList.remove('active'));
+      document.getElementById(target).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  /* ====== 下部ナビゲーション(画面切替) ====== */
+  const navItems = document.querySelectorAll('.nav-item');
+  const views = document.querySelectorAll('.view');
+
+  function switchView(viewName) {
+    navItems.forEach(n => n.classList.remove('active'));
+    document.querySelector(`.nav-item[data-view="${viewName}"]`)?.classList.add('active');
+    views.forEach(v => v.classList.remove('active'));
+    document.getElementById(`view-${viewName}`)?.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    /* 画面ごとの初期化 */
+    if (viewName === 'record') initRecordView();
+    if (viewName === 'chart') renderCharts();
+    if (viewName === 'analysis') renderAnalysis();
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => switchView(item.dataset.view));
+  });
+
+  /* ====== データストレージ ====== */
+  const STORAGE_KEY = 'diet-records-v1';
+
+  function loadRecords() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveRecords(records) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  }
+
+  /* ====== 記録画面 ====== */
+  function initRecordView() {
+    const dateInput = document.getElementById('rec-date');
+    if (!dateInput.value) {
+      const today = new Date();
+      dateInput.value = today.toISOString().split('T')[0];
+    }
+    loadRecordToForm(dateInput.value);
+    renderHistory();
+  }
+
+  function loadRecordToForm(date) {
+    const records = loadRecords();
+    const r = records[date];
+    document.getElementById('rec-cal').value = r?.cal ?? '';
+    document.getElementById('rec-p').value = r?.p ?? '';
+    document.getElementById('rec-f').value = r?.f ?? '';
+    document.getElementById('rec-c').value = r?.c ?? '';
+    document.getElementById('rec-weight').value = r?.weight ?? '';
+    document.getElementById('rec-bf').value = r?.bf ?? '';
+    document.getElementById('rec-steps').value = r?.steps ?? '';
+    document.getElementById('rec-sleep').value = r?.sleep ?? '';
+    document.getElementById('rec-train').checked = !!r?.train;
+    document.getElementById('rec-alc').checked = !!r?.alc;
+    document.getElementById('rec-memo').value = r?.memo ?? '';
+  }
+
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'rec-date') {
+      loadRecordToForm(e.target.value);
+    }
+  });
+
+  document.getElementById('btn-save').addEventListener('click', () => {
+    const date = document.getElementById('rec-date').value;
+    if (!date) {
+      showToast('日付を入力してください');
+      return;
+    }
+    const records = loadRecords();
+    const num = (id) => {
+      const v = document.getElementById(id).value;
+      return v === '' ? null : parseFloat(v);
+    };
+    records[date] = {
+      cal: num('rec-cal'),
+      p: num('rec-p'),
+      f: num('rec-f'),
+      c: num('rec-c'),
+      weight: num('rec-weight'),
+      bf: num('rec-bf'),
+      steps: num('rec-steps'),
+      sleep: num('rec-sleep'),
+      train: document.getElementById('rec-train').checked,
+      alc: document.getElementById('rec-alc').checked,
+      memo: document.getElementById('rec-memo').value || ''
+    };
+    saveRecords(records);
+    showToast('保存しました');
+    renderHistory();
+  });
+
+  function renderHistory() {
+    const records = loadRecords();
+    const dates = Object.keys(records).sort().reverse();
+    const list = document.getElementById('history-list');
+    if (dates.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-title">記録なし</div>毎朝の記録から始めましょう</div>';
+      return;
+    }
+    list.innerHTML = dates.slice(0, 30).map(date => {
+      const r = records[date];
+      const md = date.slice(5).replace('-', '/');
+      const parts = [];
+      if (r.weight != null) parts.push(`${r.weight}kg`);
+      if (r.bf != null) parts.push(`体脂肪${r.bf}%`);
+      if (r.cal != null) parts.push(`${r.cal}kcal`);
+      if (r.train) parts.push('トレ');
+      return `<div class="history-row">
+        <div class="history-date">${md}</div>
+        <div class="history-data">${parts.join(' · ') || '(データなし)'}</div>
+        <div class="history-actions">
+          <button onclick="editRecord('${date}')">編集</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window.editRecord = (date) => {
+    document.getElementById('rec-date').value = date;
+    loadRecordToForm(date);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  /* ====== Canvas描画ユーティリティ ====== */
+  function setupCanvas(canvas, height = 200) {
+    const dpr = window.devicePixelRatio || 1;
+    const cssWidth = canvas.parentElement.clientWidth;
+    canvas.style.width = cssWidth + 'px';
+    canvas.style.height = height + 'px';
+    canvas.width = cssWidth * dpr;
+    canvas.height = height * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    return { ctx, w: cssWidth, h: height };
+  }
+
+  function drawAxes(ctx, w, h, padding, opts) {
+    const { yMin, yMax, xLabels, yLabel, formatY } = opts;
+    ctx.strokeStyle = '#d8d3c5';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#8a8678';
+    ctx.font = '10px sans-serif';
+
+    /* Y軸グリッド */
+    const ySteps = 4;
+    for (let i = 0; i <= ySteps; i++) {
+      const y = padding.top + (h - padding.top - padding.bottom) * (1 - i / ySteps);
+      const val = yMin + (yMax - yMin) * (i / ySteps);
+      ctx.strokeStyle = i === 0 ? '#8a8678' : '#e8e1cd';
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(w - padding.right, y);
+      ctx.stroke();
+      ctx.fillStyle = '#8a8678';
+      ctx.textAlign = 'right';
+      ctx.fillText(formatY ? formatY(val) : val.toFixed(1), padding.left - 4, y + 3);
+    }
+
+    /* X軸ラベル */
+    if (xLabels && xLabels.length > 0) {
+      const step = Math.max(1, Math.ceil(xLabels.length / 7));
+      ctx.textAlign = 'center';
+      xLabels.forEach((label, i) => {
+        if (i % step === 0 || i === xLabels.length - 1) {
+          const x = padding.left + (w - padding.left - padding.right) * (i / Math.max(1, xLabels.length - 1));
+          ctx.fillText(label, x, h - padding.bottom + 14);
+        }
+      });
+    }
+  }
+
+  function drawLineChart(canvasId, data, opts = {}) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const { ctx, w, h } = setupCanvas(canvas, opts.height || 220);
+    ctx.clearRect(0, 0, w, h);
+
+    if (!data || data.length === 0) {
+      ctx.fillStyle = '#8a8678';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('データなし(記録画面から入力してください)', w / 2, h / 2);
+      return;
+    }
+
+    const padding = { top: 16, right: 16, bottom: 24, left: 40 };
+
+    /* シリーズ毎のスケール統一(同一軸の場合) */
+    const series = opts.series || [{ key: 'value', color: '#2c4a3e' }];
+    let yMin = opts.yMin, yMax = opts.yMax;
+    if (yMin == null || yMax == null) {
+      const vals = data.flatMap(d => series.map(s => d[s.key]).filter(v => v != null));
+      const min = Math.min(...vals), max = Math.max(...vals);
+      const range = max - min || 1;
+      yMin = yMin ?? min - range * 0.1;
+      yMax = yMax ?? max + range * 0.1;
+    }
+
+    const xLabels = data.map(d => d.label);
+    drawAxes(ctx, w, h, padding, { yMin, yMax, xLabels, formatY: opts.formatY });
+
+    /* 目標線 */
+    if (opts.targetLine != null) {
+      const y = padding.top + (h - padding.top - padding.bottom) * (1 - (opts.targetLine - yMin) / (yMax - yMin));
+      ctx.strokeStyle = '#a07060';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(w - padding.right, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    /* シリーズ描画 */
+    series.forEach(s => {
+      ctx.strokeStyle = s.color;
+      ctx.fillStyle = s.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      let started = false;
+      data.forEach((d, i) => {
+        const v = d[s.key];
+        if (v == null) { started = false; return; }
+        const x = padding.left + (w - padding.left - padding.right) * (i / Math.max(1, data.length - 1));
+        const y = padding.top + (h - padding.top - padding.bottom) * (1 - (v - yMin) / (yMax - yMin));
+        if (!started) {
+          ctx.moveTo(x, y);
+          started = true;
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+      data.forEach((d, i) => {
+        const v = d[s.key];
+        if (v == null) return;
+        const x = padding.left + (w - padding.left - padding.right) * (i / Math.max(1, data.length - 1));
+        const y = padding.top + (h - padding.top - padding.bottom) * (1 - (v - yMin) / (yMax - yMin));
+        ctx.beginPath();
+        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    });
+  }
+
+  function drawBarChart(canvasId, data, opts = {}) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const { ctx, w, h } = setupCanvas(canvas, opts.height || 200);
+    ctx.clearRect(0, 0, w, h);
+
+    if (!data || data.length === 0) {
+      ctx.fillStyle = '#8a8678';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('データなし', w / 2, h / 2);
+      return;
+    }
+
+    const padding = { top: 16, right: 16, bottom: 24, left: 40 };
+    const vals = data.map(d => d.value).filter(v => v != null);
+    const yMax = opts.yMax ?? Math.max(...vals) * 1.1;
+    const yMin = 0;
+
+    drawAxes(ctx, w, h, padding, { yMin, yMax, xLabels: data.map(d => d.label) });
+
+    if (opts.targetLine != null) {
+      const y = padding.top + (h - padding.top - padding.bottom) * (1 - (opts.targetLine - yMin) / (yMax - yMin));
+      ctx.strokeStyle = '#a07060';
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(w - padding.right, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    const barW = (w - padding.left - padding.right) / data.length * 0.7;
+    data.forEach((d, i) => {
+      if (d.value == null) return;
+      const x = padding.left + (w - padding.left - padding.right) * (i + 0.5) / data.length;
+      const yTop = padding.top + (h - padding.top - padding.bottom) * (1 - (d.value - yMin) / (yMax - yMin));
+      const yBottom = h - padding.bottom;
+      ctx.fillStyle = d.color || opts.color || '#2c4a3e';
+      ctx.fillRect(x - barW / 2, yTop, barW, yBottom - yTop);
+    });
+  }
+
+  function drawStackedBar(canvasId, data, opts = {}) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const { ctx, w, h } = setupCanvas(canvas, opts.height || 200);
+    ctx.clearRect(0, 0, w, h);
+
+    if (!data || data.length === 0) {
+      ctx.fillStyle = '#8a8678';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('データなし', w / 2, h / 2);
+      return;
+    }
+
+    const padding = { top: 16, right: 16, bottom: 24, left: 40 };
+    const series = opts.series;
+    const totals = data.map(d => series.reduce((sum, s) => sum + (d[s.key] || 0), 0));
+    const yMax = Math.max(...totals) * 1.1 || 1;
+
+    drawAxes(ctx, w, h, padding, { yMin: 0, yMax, xLabels: data.map(d => d.label) });
+
+    const barW = (w - padding.left - padding.right) / data.length * 0.7;
+    data.forEach((d, i) => {
+      const x = padding.left + (w - padding.left - padding.right) * (i + 0.5) / data.length;
+      let yBase = h - padding.bottom;
+      series.forEach(s => {
+        const v = d[s.key] || 0;
+        const heightPx = (h - padding.top - padding.bottom) * (v / yMax);
+        ctx.fillStyle = s.color;
+        ctx.fillRect(x - barW / 2, yBase - heightPx, barW, heightPx);
+        yBase -= heightPx;
+      });
+    });
+
+    /* 凡例 */
+    let lx = padding.left;
+    ctx.font = '10px sans-serif';
+    series.forEach(s => {
+      ctx.fillStyle = s.color;
+      ctx.fillRect(lx, 4, 10, 8);
+      ctx.fillStyle = '#555248';
+      ctx.textAlign = 'left';
+      ctx.fillText(s.label, lx + 14, 11);
+      lx += 50;
+    });
+  }
+
+  /* ====== 推移グラフ ====== */
+  function getRecordsArray() {
+    const records = loadRecords();
+    return Object.keys(records).sort().map(date => ({ date, ...records[date] }));
+  }
+
+  function renderCharts() {
+    const arr = getRecordsArray();
+    renderStatsSummary(arr);
+
+    const labels = arr.map(r => r.date.slice(5).replace('-', '/'));
+    const data = arr.map((r, i) => ({ ...r, label: labels[i] }));
+
+    /* 体重・体脂肪 */
+    drawLineChart('chart-body', data, {
+      series: [
+        { key: 'weight', color: '#2c4a3e' },
+        { key: 'bf', color: '#6b3a2a' }
+      ],
+      formatY: v => v.toFixed(1)
+    });
+
+    /* カロリー */
+    drawBarChart('chart-cal', data.map(d => ({ label: d.label, value: d.cal })), {
+      yMax: 2500,
+      targetLine: 1470,
+      color: '#5e7a6e'
+    });
+
+    /* PFC */
+    drawStackedBar('chart-pfc', data, {
+      series: [
+        { key: 'p', color: '#2c4a3e', label: 'P' },
+        { key: 'f', color: '#a07060', label: 'F' },
+        { key: 'c', color: '#c8b78c', label: 'C' }
+      ]
+    });
+
+    /* 睡眠・歩数 */
+    const activityData = data.map(d => ({
+      label: d.label,
+      sleep: d.sleep,
+      stepsK: d.steps != null ? d.steps / 1000 : null
+    }));
+    drawLineChart('chart-activity', activityData, {
+      series: [
+        { key: 'sleep', color: '#2c4a3e' },
+        { key: 'stepsK', color: '#5e7a6e' }
+      ],
+      yMin: 0,
+      yMax: 14,
+      formatY: v => v.toFixed(0)
+    });
+
+    /* トレーニング */
+    drawBarChart('chart-train',
+      data.map(d => ({
+        label: d.label,
+        value: d.train ? 1 : 0,
+        color: d.train ? '#2c4a3e' : '#d8d3c5'
+      })),
+      { yMax: 1.2, height: 100 }
+    );
+  }
+
+  function renderStatsSummary(arr) {
+    const summary = document.getElementById('stats-summary');
+    if (arr.length === 0) {
+      summary.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><div class="empty-title">データがありません</div>記録画面から入力してください</div>';
+      return;
+    }
+
+    const weights = arr.map(r => r.weight).filter(v => v != null);
+    const startWeight = weights[0];
+    const currentWeight = weights[weights.length - 1];
+    const targetWeight = 70;
+    const weightDiff = startWeight && currentWeight ? (currentWeight - startWeight).toFixed(1) : '-';
+    const remaining = currentWeight ? (currentWeight - targetWeight).toFixed(1) : '-';
+
+    const cals = arr.map(r => r.cal).filter(v => v != null);
+    const avgCal = cals.length ? Math.round(cals.reduce((a, b) => a + b, 0) / cals.length) : '-';
+
+    const trainDays = arr.filter(r => r.train).length;
+
+    const sleeps = arr.map(r => r.sleep).filter(v => v != null);
+    const avgSleep = sleeps.length ? (sleeps.reduce((a, b) => a + b, 0) / sleeps.length).toFixed(1) : '-';
+
+    summary.innerHTML = `
+      <div class="stat-card">
+        <div class="stat-label">現在体重</div>
+        <div class="stat-value">${currentWeight ?? '-'}<span class="stat-unit">kg</span></div>
+        <div class="stat-detail">開始から ${weightDiff} kg</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">目標まで</div>
+        <div class="stat-value">${remaining}<span class="stat-unit">kg</span></div>
+        <div class="stat-detail">目標 70.0kg</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">平均カロリー</div>
+        <div class="stat-value">${avgCal}<span class="stat-unit">kcal</span></div>
+        <div class="stat-detail">目標 1,470kcal</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">記録日数 / トレ日数</div>
+        <div class="stat-value">${arr.length} / ${trainDays}</div>
+        <div class="stat-detail">平均睡眠 ${avgSleep}h</div>
+      </div>
+    `;
+  }
+
+  /* ====== 相関分析 ====== */
+  function pearson(xs, ys) {
+    const n = xs.length;
+    if (n < 2) return null;
+    const mx = xs.reduce((a, b) => a + b, 0) / n;
+    const my = ys.reduce((a, b) => a + b, 0) / n;
+    let num = 0, dx2 = 0, dy2 = 0;
+    for (let i = 0; i < n; i++) {
+      const dx = xs[i] - mx, dy = ys[i] - my;
+      num += dx * dy;
+      dx2 += dx * dx;
+      dy2 += dy * dy;
+    }
+    const denom = Math.sqrt(dx2 * dy2);
+    return denom === 0 ? 0 : num / denom;
+  }
+
+  function linearRegression(xs, ys) {
+    const n = xs.length;
+    const mx = xs.reduce((a, b) => a + b, 0) / n;
+    const my = ys.reduce((a, b) => a + b, 0) / n;
+    let num = 0, den = 0;
+    for (let i = 0; i < n; i++) {
+      num += (xs[i] - mx) * (ys[i] - my);
+      den += (xs[i] - mx) ** 2;
+    }
+    const slope = den === 0 ? 0 : num / den;
+    const intercept = my - slope * mx;
+    return { slope, intercept };
+  }
+
+  function drawScatter(canvasId, xs, ys, opts = {}) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const { ctx, w, h } = setupCanvas(canvas, 180);
+    ctx.clearRect(0, 0, w, h);
+
+    if (xs.length < 2) {
+      ctx.fillStyle = '#8a8678';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('データ不足(2点以上必要)', w / 2, h / 2);
+      return;
+    }
+
+    const padding = { top: 16, right: 16, bottom: 28, left: 40 };
+    const xMin = Math.min(...xs), xMax = Math.max(...xs);
+    const yMin = Math.min(...ys), yMax = Math.max(...ys);
+    const xRange = xMax - xMin || 1;
+    const yRange = yMax - yMin || 1;
+    const xLo = xMin - xRange * 0.1, xHi = xMax + xRange * 0.1;
+    const yLo = yMin - yRange * 0.1, yHi = yMax + yRange * 0.1;
+
+    const px = v => padding.left + (w - padding.left - padding.right) * (v - xLo) / (xHi - xLo);
+    const py = v => padding.top + (h - padding.top - padding.bottom) * (1 - (v - yLo) / (yHi - yLo));
+
+    /* グリッド */
+    ctx.strokeStyle = '#e8e1cd';
+    ctx.lineWidth = 1;
+    ctx.font = '9px sans-serif';
+    ctx.fillStyle = '#8a8678';
+    for (let i = 0; i <= 4; i++) {
+      const y = padding.top + (h - padding.top - padding.bottom) * (i / 4);
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(w - padding.right, y);
+      ctx.stroke();
+      const yVal = yHi - (yHi - yLo) * (i / 4);
+      ctx.textAlign = 'right';
+      ctx.fillText(yVal.toFixed(1), padding.left - 4, y + 3);
+    }
+    for (let i = 0; i <= 4; i++) {
+      const x = padding.left + (w - padding.left - padding.right) * (i / 4);
+      const xVal = xLo + (xHi - xLo) * (i / 4);
+      ctx.textAlign = 'center';
+      ctx.fillText(xVal.toFixed(1), x, h - padding.bottom + 12);
+    }
+
+    /* 軸ラベル */
+    if (opts.xLabel || opts.yLabel) {
+      ctx.font = '10px sans-serif';
+      ctx.fillStyle = '#555248';
+      if (opts.xLabel) {
+        ctx.textAlign = 'center';
+        ctx.fillText(opts.xLabel, w / 2, h - 4);
+      }
+      if (opts.yLabel) {
+        ctx.save();
+        ctx.translate(10, h / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.textAlign = 'center';
+        ctx.fillText(opts.yLabel, 0, 0);
+        ctx.restore();
+      }
+    }
+
+    /* 回帰直線 */
+    const { slope, intercept } = linearRegression(xs, ys);
+    ctx.strokeStyle = '#6b3a2a';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 3]);
+    ctx.beginPath();
+    ctx.moveTo(px(xLo), py(slope * xLo + intercept));
+    ctx.lineTo(px(xHi), py(slope * xHi + intercept));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    /* 点 */
+    ctx.fillStyle = '#2c4a3e';
+    for (let i = 0; i < xs.length; i++) {
+      ctx.beginPath();
+      ctx.arc(px(xs[i]), py(ys[i]), 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function correlationLabel(r) {
+    const abs = Math.abs(r);
+    let strength, cls;
+    if (abs >= 0.7) { strength = '強い相関'; cls = r > 0 ? 'strong-positive' : 'strong-negative'; }
+    else if (abs >= 0.4) { strength = '中程度の相関'; cls = r > 0 ? 'weak-positive' : 'weak-negative'; }
+    else if (abs >= 0.2) { strength = '弱い相関'; cls = 'weak'; }
+    else { strength = '相関なし'; cls = 'weak'; }
+    const direction = r > 0.05 ? '正の' : r < -0.05 ? '負の' : '';
+    return { strength: direction + strength, cls };
+  }
+
+  function renderAnalysis() {
+    const arr = getRecordsArray();
+    const container = document.getElementById('analysis-content');
+
+    if (arr.length < 2) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-title">データ不足</div>2日以上の記録が必要です</div>';
+      return;
+    }
+
+    /* 翌日体重変化を計算 */
+    const withDelta = arr.map((r, i) => {
+      if (i === arr.length - 1) return { ...r, weightDelta: null };
+      const next = arr[i + 1];
+      const wd = (r.weight != null && next.weight != null) ? next.weight - r.weight : null;
+      return { ...r, weightDelta: wd };
+    });
+
+    /* ペアデータ抽出ヘルパー */
+    const extract = (xKey, yKey, filter) => {
+      const xs = [], ys = [];
+      withDelta.forEach(r => {
+        const x = typeof xKey === 'function' ? xKey(r) : r[xKey];
+        const y = typeof yKey === 'function' ? yKey(r) : r[yKey];
+        if (x != null && y != null && (!filter || filter(r))) {
+          xs.push(x); ys.push(y);
+        }
+      });
+      return { xs, ys };
+    };
+
+    const correlations = [
+      {
+        id: 'cor1', title: '摂取カロリー × 翌日の体重変化',
+        xLabel: 'kcal', yLabel: 'Δkg',
+        data: extract('cal', 'weightDelta'),
+        interpret: (r) => r > 0.2 ? 'カロリー増→翌日体重増の傾向' : r < -0.2 ? 'カロリーと翌日体重に逆の関係' : '明確な傾向なし(食事以外の要因が大きい)'
+      },
+      {
+        id: 'cor2', title: 'タンパク質 × 体脂肪率',
+        xLabel: 'P (g)', yLabel: '体脂肪%',
+        data: extract('p', 'bf'),
+        interpret: (r) => r < -0.2 ? 'タンパク質摂取が多い日ほど体脂肪率が低い傾向' : r > 0.2 ? '逆相関は確認できず' : '相関は弱い'
+      },
+      {
+        id: 'cor3', title: 'トレーニング × 翌日体重変化',
+        xLabel: 'トレ(0/1)', yLabel: 'Δkg',
+        data: extract(r => r.train ? 1 : 0, 'weightDelta'),
+        interpret: (r) => r < -0.2 ? 'トレ実施日の翌日に体重減の傾向' : r > 0.2 ? 'トレと体重に逆の関係(水分要因)' : 'トレ単独での体重影響は小さい'
+      },
+      {
+        id: 'cor4', title: '睡眠時間 × 翌日体重変化',
+        xLabel: '睡眠h', yLabel: 'Δkg',
+        data: extract('sleep', 'weightDelta'),
+        interpret: (r) => r < -0.2 ? '睡眠が長い日の翌日に体重減の傾向' : r > 0.2 ? '逆の関係' : '睡眠と直接の体重影響は弱いが、ホルモンへの影響は別'
+      },
+      {
+        id: 'cor5', title: '歩数 × カロリー(摂取量)',
+        xLabel: '歩数', yLabel: 'kcal',
+        data: extract('steps', 'cal'),
+        interpret: (r) => r > 0.2 ? '活動量が多い日に摂取も増える傾向(代償行動の可能性)' : r < -0.2 ? '活動増えても摂取は増えない' : '明確な傾向なし'
+      }
+    ];
+
+    container.innerHTML = correlations.map(c => `
+      <div class="correlation-card">
+        <div class="correlation-header">
+          <div class="correlation-title">${c.title}</div>
+          <div class="correlation-coef" id="${c.id}-coef">-</div>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas id="${c.id}-canvas"></canvas>
+        </div>
+        <div class="correlation-interpretation" id="${c.id}-interp"></div>
+      </div>
+    `).join('');
+
+    correlations.forEach(c => {
+      const { xs, ys } = c.data;
+      drawScatter(`${c.id}-canvas`, xs, ys, { xLabel: c.xLabel, yLabel: c.yLabel });
+      if (xs.length >= 2) {
+        const r = pearson(xs, ys);
+        const { strength, cls } = correlationLabel(r);
+        const coefEl = document.getElementById(`${c.id}-coef`);
+        coefEl.textContent = `r = ${r.toFixed(2)}`;
+        coefEl.className = `correlation-coef ${cls}`;
+        const sampleNote = xs.length < 10 ? ` (n=${xs.length}・標本少)` : ` (n=${xs.length})`;
+        document.getElementById(`${c.id}-interp`).textContent = strength + sampleNote + ' / ' + c.interpret(r);
+      } else {
+        document.getElementById(`${c.id}-coef`).textContent = '-';
+        document.getElementById(`${c.id}-interp`).textContent = `データ不足 (n=${xs.length})`;
+      }
+    });
+  }
+
+  /* ====== データ管理 ====== */
+  window.exportData = () => {
+    const records = loadRecords();
+    const blob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `diet-records-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('エクスポートしました');
+  };
+
+  window.importData = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (typeof data !== 'object' || data === null) throw new Error();
+        if (!confirm('現在のデータを上書きします。よろしいですか?')) return;
+        saveRecords(data);
+        showToast('インポートしました');
+      } catch (err) {
+        showToast('ファイルの読み込みに失敗しました');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  window.exportCSV = () => {
+    const records = loadRecords();
+    const dates = Object.keys(records).sort();
+    if (dates.length === 0) {
+      showToast('データがありません');
+      return;
+    }
+    const headers = ['date', 'cal', 'p', 'f', 'c', 'weight', 'bf', 'steps', 'sleep', 'train', 'alc', 'memo'];
+    const rows = [headers.join(',')];
+    dates.forEach(d => {
+      const r = records[d];
+      const row = headers.map(h => {
+        if (h === 'date') return d;
+        const v = r[h];
+        if (v == null) return '';
+        if (typeof v === 'boolean') return v ? '1' : '0';
+        if (typeof v === 'string') return `"${v.replace(/"/g, '""')}"`;
+        return v;
+      });
+      rows.push(row.join(','));
+    });
+    const blob = new Blob(['\ufeff' + rows.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `diet-records-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('CSV出力しました');
+  };
+
+  window.resetData = () => {
+    if (!confirm('すべてのデータを削除します。本当によろしいですか?')) return;
+    if (!confirm('この操作は元に戻せません。最終確認してください。')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    showToast('データを削除しました');
+  };
+
+  /* リサイズ対応 */
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      const activeView = document.querySelector('.view.active')?.id;
+      if (activeView === 'view-chart') renderCharts();
+      if (activeView === 'view-analysis') renderAnalysis();
+    }, 200);
+  });
+
+</script>
+
+</body>
+</html>
