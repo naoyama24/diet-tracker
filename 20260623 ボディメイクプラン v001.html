@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ボディメイクプラン</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --bg-card: #1a1a1a;
+    --bg-card2: #222222;
+    --ink: #e8e4dc;
+    --ink-2: #a09890;
+    --ink-3: #5a5450;
+    --line: #2e2e2e;
+    --accent: #c8a96e;
+    --accent-2: #7eb89a;
+    --accent-3: #c87e6e;
+    --warm: rgba(200, 169, 110, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.7;
+    padding-bottom: 80px;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 16px 40px;
+  }
+
+  /* ヘッダー */
+  .header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 8px;
+  }
+
+  .header .eyebrow {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .header h1 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .header .sub {
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+
+  /* ナビゲーション */
+  .nav {
+    display: flex;
+    gap: 4px;
+    padding: 16px 0 20px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+
+  .nav-btn {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    padding: 10px 4px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all 0.2s;
+    line-height: 1.3;
+  }
+
+  .nav-btn.active {
+    background: var(--accent);
+    color: #0f0f0f;
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* セクション */
+  .section {
+    display: none;
+  }
+
+  .section.active {
+    display: block;
+    animation: fadeIn 0.25s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* セクションタイトル */
+  .section-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .section-sub {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-bottom: 20px;
+  }
+
+  /* メニューカード */
+  .menu-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 16px;
+    margin-bottom: 12px;
+  }
+
+  .menu-card.lite {
+    border-left: 3px solid var(--accent-2);
+  }
+
+  .menu-card.normal {
+    border-left: 3px solid var(--accent);
+  }
+
+  .menu-card.hard {
+    border-left: 3px solid var(--accent-3);
+  }
+
+  .menu-card.consecutive {
+    border-left: 3px solid #7e9eb8;
+  }
+
+  .menu-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .menu-card.lite .menu-label { color: var(--accent-2); }
+  .menu-card.normal .menu-label { color: var(--accent); }
+  .menu-card.hard .menu-label { color: var(--accent-3); }
+  .menu-card.consecutive .menu-label { color: #7e9eb8; }
+
+  .menu-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .menu-duration {
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-bottom: 14px;
+  }
+
+  /* 種目リスト */
+  .exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .exercise-item {
+    background: var(--bg-card2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .exercise-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    flex: 1;
+  }
+
+  .exercise-note {
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-top: 2px;
+  }
+
+  .exercise-reps {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* フェーズ区切り */
+  .phase-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0 10px;
+  }
+
+  .phase-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--ink-3);
+    white-space: nowrap;
+    letter-spacing: 0.06em;
+  }
+
+  .phase-line {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  /* マイルストーン */
+  .milestone-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .milestone-list::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 24px;
+    bottom: 24px;
+    width: 1px;
+    background: var(--line);
+  }
+
+  .milestone-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 12px 0;
+  }
+
+  .milestone-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    z-index: 1;
+  }
+
+  .milestone-dot.current {
+    background: var(--accent);
+    color: #0f0f0f;
+    border-color: var(--accent);
+  }
+
+  .milestone-content {
+    padding-top: 8px;
+  }
+
+  .milestone-date {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+  }
+
+  .milestone-goal {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 2px 0;
+  }
+
+  .milestone-desc {
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+
+  /* 食事プラン */
+  .diet-phase {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 16px;
+    margin-bottom: 12px;
+  }
+
+  .diet-phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .diet-phase-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .diet-phase-period {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .pfc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .pfc-cell {
+    background: var(--bg-card2);
+    border-radius: 6px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+
+  .pfc-cell .pfc-label {
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+
+  .pfc-cell .pfc-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .pfc-cell .pfc-unit {
+    font-size: 10px;
+    color: var(--ink-3);
+    margin-top: 2px;
+  }
+
+  .diet-note {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    line-height: 1.6;
+  }
+
+  /* コールアウト */
+  .callout {
+    background: var(--warm);
+    border: 1px solid rgba(200, 169, 110, 0.2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+
+  .callout strong {
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="eyebrow">Body Make Plan</div>
+    <h1>ボディメイクプラン</h1>
+    <div class="sub">2026年6月〜 / 目標：体脂肪率15%・Tシャツが様になる体</div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showSection('training')">トレーニング</button>
+    <button class="nav-btn" onclick="showSection('warmup')">準備・整理</button>
+    <button class="nav-btn" onclick="showSection('diet')">食事プラン</button>
+    <button class="nav-btn" onclick="showSection('milestone')">目標</button>
+  </div>
+
+  <!-- トレーニング -->
+  <div class="section active" id="section-training">
+    <div class="section-title">トレーニングメニュー</div>
+    <div class="section-sub">その日の状態に合わせて選ぶ</div>
+
+    <div class="callout">
+      <strong>基本ルール：</strong>同じ3種目を継続しながら、2週に1回を目安に重量か回数を少しずつ増やす。記録をつけて進捗を確認すること。
+    </div>
+
+    <div class="menu-card lite">
+      <div class="menu-label">Lite — やる気ない・時間ない日</div>
+      <div class="menu-title">マシン3種目</div>
+      <div class="menu-duration">30分以内 · マシンのみ</div>
+      <div class="exercise-list">
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">レッグプレス</div>
+            <div class="exercise-note">膝が内側に入らないよう注意</div>
+          </div>
+          <div class="exercise-reps">3 × 12</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">チェストプレスマシン</div>
+            <div class="exercise-note">肩甲骨を寄せて固定</div>
+          </div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ケーブルロウ</div>
+            <div class="exercise-note">背中を丸めず、肘を後ろに引く</div>
+          </div>
+          <div class="exercise-reps">3 × 12</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-card normal">
+      <div class="menu-label">Normal — 通常日</div>
+      <div class="menu-title">フリーウェイト3種目</div>
+      <div class="menu-duration">30〜40分 · フリーウェイト</div>
+      <div class="exercise-list">
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">スクワット</div>
+            <div class="exercise-note">深さとフォームを意識</div>
+          </div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ベンチプレス</div>
+            <div class="exercise-note">胸を張ったまま押す</div>
+          </div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ラットプルダウン</div>
+            <div class="exercise-note">肘を下に引く意識で</div>
+          </div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-card hard">
+      <div class="menu-label">Hard — やる気ある日</div>
+      <div class="menu-title">フリーウェイト＋追加種目</div>
+      <div class="menu-duration">50〜60分</div>
+      <div class="exercise-list">
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">スクワット</div>
+            <div class="exercise-note">深さとフォームを意識</div>
+          </div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ベンチプレス</div>
+            <div class="exercise-note">胸を張ったまま押す</div>
+          </div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ラットプルダウン</div>
+            <div class="exercise-note">肘を下に引く意識で</div>
+          </div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ブルガリアンスクワット</div>
+            <div class="exercise-note">左右交互・インターバル60〜90秒</div>
+          </div>
+          <div class="exercise-reps">2 × 10</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-card consecutive">
+      <div class="menu-label">Consecutive — 連日トレーニング時</div>
+      <div class="menu-title">肩・腕メニュー</div>
+      <div class="menu-duration">30分 · 前日と異なる部位</div>
+      <div class="exercise-list">
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ショルダープレスマシン</div>
+            <div class="exercise-note">反動を使わず肩の真上に押し上げる</div>
+          </div>
+          <div class="exercise-reps">3 × 10</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ケーブルサイドレイズ</div>
+            <div class="exercise-note">肘を軽く曲げ肩の高さまで</div>
+          </div>
+          <div class="exercise-reps">3 × 12</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">バーベルカール（二頭）</div>
+            <div class="exercise-note">肘を固定してゆっくり上げ下げ</div>
+          </div>
+          <div class="exercise-reps">3 × 12</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">トライセプスプッシュダウン（三頭）</div>
+            <div class="exercise-note">肘を体側に固定して前腕だけで押す</div>
+          </div>
+          <div class="exercise-reps">3 × 12</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ウォームアップ・クールダウン -->
+  <div class="section" id="section-warmup">
+    <div class="section-title">準備・整理運動</div>
+    <div class="section-sub">怪我予防と回復のために必ず行う</div>
+
+    <div class="menu-card normal">
+      <div class="menu-label">スクワット・ベンチ・ラットプルの日</div>
+      <div class="menu-title">ウォームアップ</div>
+      <div class="menu-duration">5〜10分</div>
+      <div class="exercise-list">
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">バイク or トレッドミル</div>
+            <div class="exercise-note">軽負荷で心拍を上げる</div>
+          </div>
+          <div class="exercise-reps">5分</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ワールドグレイテストストレッチ</div>
+            <div class="exercise-note">ランジ姿勢から体幹を捻る</div>
+          </div>
+          <div class="exercise-reps">左右×5</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ヒップサークル</div>
+            <div class="exercise-note">四つん這いで股関節を回す</div>
+          </div>
+          <div class="exercise-reps">左右×10</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">空スクワット</div>
+            <div class="exercise-note">本番動作の予行</div>
+          </div>
+          <div class="exercise-reps">10回</div>
+        </div>
+      </div>
+
+      <div class="phase-divider">
+        <div class="phase-label">クールダウン</div>
+        <div class="phase-line"></div>
+      </div>
+
+      <div class="exercise-list">
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ピジョンポーズ</div>
+            <div class="exercise-note">お尻と股関節外側を伸ばす</div>
+          </div>
+          <div class="exercise-reps">左右30秒×2</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ハムストリングストレッチ</div>
+            <div class="exercise-note">仰向けで片脚を引き寄せる</div>
+          </div>
+          <div class="exercise-reps">左右30秒</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ドアフレーム胸ストレッチ</div>
+            <div class="exercise-note">肘90度で手をつき体を前に出す</div>
+          </div>
+          <div class="exercise-reps">左右30秒</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">広背筋ストレッチ</div>
+            <div class="exercise-note">柱につかまり腰を引く</div>
+          </div>
+          <div class="exercise-reps">30秒×2</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-card consecutive">
+      <div class="menu-label">肩・腕メニューの日</div>
+      <div class="menu-title">ウォームアップ</div>
+      <div class="menu-duration">5〜10分</div>
+      <div class="exercise-list">
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">バイク or トレッドミル</div>
+            <div class="exercise-note">軽負荷で心拍を上げる</div>
+          </div>
+          <div class="exercise-reps">5分</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">ショルダーサークル</div>
+            <div class="exercise-note">肩を前後に大きく回す</div>
+          </div>
+          <div class="exercise-reps">前後×10</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">バンドプルアパート</div>
+            <div class="exercise-note">バンドを両手で持ち胸の前から後ろへ</div>
+          </div>
+          <div class="exercise-reps">10回</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">空ショルダープレス</div>
+            <div class="exercise-note">本番動作の予行</div>
+          </div>
+          <div class="exercise-reps">10回</div>
+        </div>
+      </div>
+
+      <div class="phase-divider">
+        <div class="phase-label">クールダウン</div>
+        <div class="phase-line"></div>
+      </div>
+
+      <div class="exercise-list">
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">クロスボディ肩ストレッチ</div>
+            <div class="exercise-note">片腕を反対側に伸ばし押さえる</div>
+          </div>
+          <div class="exercise-reps">左右30秒</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">三頭筋ストレッチ</div>
+            <div class="exercise-note">片腕を頭の後ろに曲げ肘を押す</div>
+          </div>
+          <div class="exercise-reps">左右30秒</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">二頭筋ストレッチ</div>
+            <div class="exercise-note">壁に手をつき体を前に回転</div>
+          </div>
+          <div class="exercise-reps">左右30秒</div>
+        </div>
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">首・僧帽筋ストレッチ</div>
+            <div class="exercise-note">頭を横に傾け反対の手で軽く押さえる</div>
+          </div>
+          <div class="exercise-reps">左右30秒</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 食事プラン -->
+  <div class="section" id="section-diet">
+    <div class="section-title">食事プラン推移</div>
+    <div class="section-sub">段階的にカロリーを増やしボディリコンプへ</div>
+
+    <div class="callout">
+      <strong>基本方針：</strong>炭水化物から先に増やし、7月中旬以降に脂質を緩める。タンパク質130gは常に維持。
+    </div>
+
+    <div class="diet-phase">
+      <div class="diet-phase-header">
+        <div class="diet-phase-title">移行期 前半</div>
+        <div class="diet-phase-period">6/22〜6/28</div>
+      </div>
+      <div class="pfc-grid">
+        <div class="pfc-cell">
+          <div class="pfc-label">カロリー</div>
+          <div class="pfc-value">1,600</div>
+          <div class="pfc-unit">kcal</div>
+        </div>
+        <div class="pfc-cell">
+          <div class="pfc-label">タンパク質</div>
+          <div class="pfc-value">130</div>
+          <div class="pfc-unit">g</div>
+        </div>
+        <div class="pfc-cell">
+          <div class="pfc-label">脂質</div>
+          <div class="pfc-value">40</div>
+          <div class="pfc-unit">g</div>
+        </div>
+        <div class="pfc-cell">
+          <div class="pfc-label">炭水化物</div>
+          <div class="pfc-value">180</div>
+          <div class="pfc-unit">g</div>
+        </div>
+      </div>
+      <div class="diet-note">昼食におにぎり1個追加が基本。脂質は現状維持。</div>
+    </div>
+
+    <div class="diet-phase">
+      <div class="diet-phase-header">
+        <div class="diet-phase-title">移行期 中盤</div>
+        <div class="diet-phase-period">6/29〜7/13</div>
+      </div>
+      <div class="pfc-grid">
+        <div class="pfc-cell">
+          <div class="pfc-label">カロリー</div>
+          <div class="pfc-value">1,700</div>
+          <div class="pfc-unit">kcal</div>
+        </div>
+        <div class="pfc-cell">
+          <div class="pfc-label">タンパク質</div>
+          <div class="pfc-value">130</div>
+          <div class="pfc-unit">g</div>
+        </div>
+        <div class="pfc-cell">
+          <div class="pfc-label">脂質</div>
+          <div class="pfc-value">45</div>
+          <div class="pfc-unit">g</div>
+        </div>
+        <div class="pfc-cell">
+          <div class="pfc-label">炭水化物</div>
+          <div class="pfc-value">195</div>
+          <div class="pfc-unit">g</div>
+        </div>
+      </div>
+      <div class="diet-note">炭水化物をさらに増やす。昼食の量を調整。</div>
+    </div>
+
+    <div class="diet-phase">
+      <div class="diet-phase-header">
+        <div class="diet-phase-title">移行期 後半</div>
+        <div class="diet-phase-period">7/14〜7/31</div>
+      </div>
+      <div class="pfc-grid">
+        <div class="pfc-cell">
+          <div class="pfc-label">カロリー</div>
+          <div class="pfc-value">1,800</div>
+          <div class="pfc-unit">kcal</div>
+        </div>
+        <div class="pfc-cell">
+          <div class="pfc-label">タンパク質</div>
+          <div class="pfc-value">130</div>
+          <div class="pfc-unit">g</div>
+        </div>
+        <div class="pfc-cell">
+          <div class="pfc-label">脂質</div>
+          <div class="pfc-value">55</div>
+          <div class="pfc-unit">g</div>
+        </div>
+        <div class="pfc-cell">
+          <div class="pfc-label">炭水化物</div>
+          <div class="pfc-value">200</div>
+          <div class="pfc-unit">g</div>
+        </div>
+      </div>
+      <div class="diet-note">脂質も緩める。鶏もも皮あり・卵2個・チーズなどOK。</div>
+    </div>
+
+    <div class="diet-phase">
+      <div class="diet-phase-header">
+        <div class="diet-phase-title">ボディリコンプ期</div>
+        <div class="diet-phase-period">8月〜</div>
+      </div>
+      <div class="pfc-grid">
+        <div class="pfc-cell">
+          <div class="pfc-label">カロリー</div>
+          <div class="pfc-value">1,800</div>
+          <div class="pfc-unit">kcal</div>
+        </div>
+        <div class="pfc-cell">
+          <div class="pfc-label">タンパク質</div>
+          <div class="pfc-value">130〜140</div>
+          <div class="pfc-unit">g</div>
+        </div>
+        <div class="pfc-cell">
+          <div class="pfc-label">脂質</div>
+          <div class="pfc-value">50〜60</div>
+          <div class="pfc-unit">g</div>
+        </div>
+        <div class="pfc-cell">
+          <div class="pfc-label">炭水化物</div>
+          <div class="pfc-value">180〜200</div>
+          <div class="pfc-unit">g</div>
+        </div>
+      </div>
+      <div class="diet-note">飲み会は月2回まで気にせず。それ以外は記録継続。ラーメンは醤油・塩系ならたまにOK。</div>
+    </div>
+  </div>
+
+  <!-- マイルストーン -->
+  <div class="section" id="section-milestone">
+    <div class="section-title">マイルストーン</div>
+    <div class="section-sub">目標：Tシャツが様になる自信を持てる体</div>
+
+    <div class="milestone-list">
+      <div class="milestone-item">
+        <div class="milestone-dot current">今</div>
+        <div class="milestone-content">
+          <div class="milestone-date">2026年6月</div>
+          <div class="milestone-goal">体重72.4kg・体脂肪率23.0%</div>
+          <div class="milestone-desc">ボディメイク開始・移行期スタート</div>
+        </div>
+      </div>
+      <div class="milestone-item">
+        <div class="milestone-dot">8月</div>
+        <div class="milestone-content">
+          <div class="milestone-date">2026年8月</div>
+          <div class="milestone-goal">オーダースーツ採寸</div>
+          <div class="milestone-desc">移行期完了後・体型安定のタイミング</div>
+        </div>
+      </div>
+      <div class="milestone-item">
+        <div class="milestone-dot">9末</div>
+        <div class="milestone-content">
+          <div class="milestone-date">2026年9月末</div>
+          <div class="milestone-goal">体脂肪率20%切り</div>
+          <div class="milestone-desc">ボディリコンプ効果が出始める時期</div>
+        </div>
+      </div>
+      <div class="milestone-item">
+        <div class="milestone-dot">11末</div>
+        <div class="milestone-content">
+          <div class="milestone-date">2026年11月末</div>
+          <div class="milestone-goal">体脂肪率18%</div>
+          <div class="milestone-desc">Tシャツが様になるライン</div>
+        </div>
+      </div>
+      <div class="milestone-item">
+        <div class="milestone-dot">12月</div>
+        <div class="milestone-content">
+          <div class="milestone-date">2026年12月</div>
+          <div class="milestone-goal">現状維持</div>
+          <div class="milestone-desc">忘年会シーズン・無理せず乗り切る</div>
+        </div>
+      </div>
+      <div class="milestone-item">
+        <div class="milestone-dot">最終</div>
+        <div class="milestone-content">
+          <div class="milestone-date">2027年末〜2028年初</div>
+          <div class="milestone-goal">体脂肪率15%</div>
+          <div class="milestone-desc">最終目標・自信を持てる体型の完成</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('section-' + id).classList.add('active');
+    event.target.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
